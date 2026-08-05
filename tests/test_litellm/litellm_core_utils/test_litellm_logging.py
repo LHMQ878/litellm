@@ -523,6 +523,18 @@ class TestUpdateFromKwargs:
         )
         assert logging_obj.litellm_params["litellm_call_id"] == "call-empty"
 
+    def test_does_not_mutate_caller_metadata_dict(self, logging_obj):
+        """LIT-5137: on litellm_metadata routes kwargs["metadata"] is the provider-bound dict."""
+        caller_metadata: dict = {}
+
+        logging_obj.update_from_kwargs(
+            kwargs={"metadata": caller_metadata, "litellm_metadata": {"user_api_key_hash": "hashed"}},
+            litellm_params={"metadata": {"user_api_key_hash": "hashed", "litellm_api_version": "1.0"}},
+        )
+
+        assert caller_metadata == {}
+        assert logging_obj.litellm_params["metadata"]["user_api_key_hash"] == "hashed"
+
 
 def test_logging_prevent_double_logging(logging_obj):
     """
